@@ -1,6 +1,6 @@
 # Archivo: .github/workflows/playwright.yml
 
-name: Run Playwright Tests
+name: Run Login Test Only
 
 on:
   push:
@@ -9,7 +9,20 @@ on:
     branches: [main]
   schedule:
     - cron: '0 8 * * *'  # Todos los días a las 08:00 UTC
-
+  
+  # Ejecución Manual desde GitHub Actions
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Selecciona el navegador'
+        required: true
+        default: 'chromium'
+        type: choice
+        options:
+        - chromium
+        - firefox
+        - webkit
+        - all
 
 jobs:
   test:
@@ -30,19 +43,29 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run tests
-        run: npx playwright test
+      - name: Run Login Test Only
+        run: |
+          # Lógica para seleccionar navegador si es manual, o correr por defecto si es automático
+          PROJECT_FLAG=""
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ inputs.browser }}" != "all" ]; then
+            PROJECT_FLAG="--project=${{ inputs.browser }}"
+          fi
+          
+          # Ejecutamos SOLO el test de login
+          npx playwright test tests/login.spec.ts $PROJECT_FLAG
 
       - name: Upload Playwright report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
+          retention-days: 30
 
   notify-discord:
     runs-on: ubuntu-latest
     needs: test
-    if: always()  # Se ejecuta siempre, independientemente del resultado del job anterior
+    if: always()
     
     steps:
       - name: Notify Discord on Success
@@ -52,33 +75,32 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         with:
           args: |
-            ✅ **Playwright Tests - EXITOSOS**
+            ✅ **Login Test - EXITOSO**
             
-            🎯 **Repositorio:** ${{ github.repository }}
+            🎯 **Repo:** ${{ github.repository }}
             🌿 **Branch:** ${{ github.ref_name }}
-            💾 **Commit:** ${{ github.sha }}
             👤 **Actor:** ${{ github.actor }}
             
-            📊 **Estado:** Todos los tests pasaron correctamente
+            📊 **Estado:** El login funciona correctamente con las credenciales actuales.
             🔗 **Ver detalles:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      - name: Notify Discord on Failure
+      - name: Notify Discord on Failure (Credentials Issue)
         if: needs.test.result == 'failure'
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         with:
           args: |
-            ❌ **Playwright Tests - FALLARON**
+            🚨 **ALERTA: Fallo en Test de Login**
             
-            🎯 **Repositorio:** ${{ github.repository }}
+            ⚠️ **CAUSA PROBABLE:** Las credenciales han cambiado o expirado.
+            
+            🎯 **Repo:** ${{ github.repository }}
             🌿 **Branch:** ${{ github.ref_name }}
-            💾 **Commit:** ${{ github.sha }}
             👤 **Actor:** ${{ github.actor }}
             
-            ⚠️ **Estado:** Algunos tests fallaron
-            🔗 **Ver detalles:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            📋 **Reporte:** Descarga el artifact 'playwright-report' para más información
+            🛑 **Acción requerida:** Revisar si el usuario/password en TestConfig siguen vigentes.
+            🔗 **Ver reporte:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Notify Discord on Cancellation
         if: needs.test.result == 'cancelled'
@@ -87,12 +109,4 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         with:
           args: |
-            🔄 **Playwright Tests - CANCELADOS**
-            
-            🎯 **Repositorio:** ${{ github.repository }}
-            🌿 **Branch:** ${{ github.ref_name }}
-            💾 **Commit:** ${{ github.sha }}
-            👤 **Actor:** ${{ github.actor }}
-            
-            ⏹️ **Estado:** Los tests fueron cancelados
-            🔗 **Ver detalles:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            🔄 **Login Test - CANCELADO**
