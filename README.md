@@ -1,104 +1,116 @@
-Automatización de Pruebas para Backoffice (sdoc-automation-backoffice)
-Este repositorio contiene un conjunto de pruebas automatizadas de extremo a extremo (E2E) para la aplicación de backoffice de SmartDoc. El proyecto está desarrollado con Playwright y TypeScript para garantizar la calidad y el correcto funcionamiento de las funcionalidades clave de la plataforma.
+# Automatización de Pruebas para Backoffice (sdoc-automation-backoffice)
 
-🚀 Propósito del Proyecto
-El objetivo principal de este proyecto es automatizar las pruebas de regresión y verificar nuevas funcionalidades de forma rápida y fiable. Esto nos permite detectar errores de manera temprana, agilizar el ciclo de desarrollo y asegurar una experiencia de usuario estable.
+Este repositorio contiene un conjunto de pruebas automatizadas de extremo a extremo (E2E) para la aplicación de backoffice de SmartDoc. El proyecto está desarrollado con **Playwright** y **TypeScript** para garantizar la calidad y el correcto funcionamiento de las funcionalidades clave de la plataforma.
 
-✨ Características Principales
-Framework Moderno: Utiliza Playwright para pruebas rápidas, fiables y compatibles con los principales navegadores.
+## 🚀 Propósito del Proyecto
 
-Patrón de Diseño Page Object Model (POM): El código está organizado en pages para separar la lógica de las pruebas de la definición de los elementos de la interfaz, lo que facilita el mantenimiento.
+El objetivo principal de este proyecto es automatizar las pruebas de regresión y verificar nuevas funcionalidades de forma rápida y fiable. Esto nos permite detectar errores de manera temprana, agilizar el ciclo de desarrollo y asegurar una experiencia de usuario estable para los administradores del sistema.
 
-Autenticación Optimizada: Incluye un flujo de autenticación global (auth.setup.ts) que inicia sesión una sola vez y reutiliza el estado de la sesión para todas las pruebas, reduciendo significativamente el tiempo de ejecución.
+## ✨ Características Principales
 
-Integración Continua (CI): Configurado con GitHub Actions para ejecutar las pruebas automáticamente en cada push o pull request a la rama main, y también de forma programada.
+* **Framework Moderno:** Utiliza Playwright para pruebas rápidas, fiables y con manejo automático de esperas.
+* **Patrón de Diseño Page Object Model (POM):** El código está organizado en `pages` para separar la lógica de las pruebas de los selectores, facilitando el mantenimiento a largo plazo.
+* **Autenticación Híbrida:**
+    * **Global:** Flujo `auth.setup.ts` que inicia sesión una sola vez y reutiliza el estado (cookies) para pruebas de funcionalidades internas, ahorrando tiempo.
+    * **Aislada:** Capacidad de ejecutar pruebas de Login "limpias" (sin estado previo) para validar credenciales y seguridad.
+* **Ejecución Manual Paramétrica:** Integración con GitHub Actions para disparar pruebas bajo demanda seleccionando el navegador específico.
+* **Integración Continua (CI):** Ejecución automática en cada `push`/`pull_request` y monitoreo diario programado.
+* **Reportes y Notificaciones:** Reportes HTML detallados y alertas automáticas a **Discord** en caso de fallos (diferenciando errores de credenciales vs. errores de aplicación).
 
-Soporte Multi-navegador: Las pruebas están configuradas para ejecutarse en Chromium, Firefox, WebKit, Microsoft Edge y Google Chrome.
+## 🛠️ Tecnologías Utilizadas
 
-Reportes Claros: Genera reportes HTML detallados para analizar los resultados de las pruebas de manera sencilla.
+* Playwright
+* TypeScript
+* Node.js
+* GitHub Actions
 
-🛠️ Tecnologías Utilizadas
-Playwright
+## 📦 Prerrequisitos
 
-TypeScript
+Asegúrate de tener instalado **Node.js** en tu sistema (se recomienda la versión 18 o superior).
 
-Node.js
+## ⚙️ Instalación y Configuración
 
-GitHub Actions
+1.  **Clona el repositorio:**
+    ```bash
+    git clone <URL-DEL-REPOSITORIO>
+    cd sdoc-automation-backoffice
+    ```
 
-📦 Prerrequisitos
-Asegúrate de tener instalado Node.js en tu sistema (se recomienda la versión 18 o superior).
+2.  **Instala las dependencias:**
+    Se recomienda usar `npm ci` para una instalación limpia basada en el lockfile.
+    ```bash
+    npm ci
+    ```
 
-⚙️ Instalación y Configuración
-Clona el repositorio:
+3.  **Instala los navegadores de Playwright:**
+    ```bash
+    npx playwright install --with-deps
+    ```
 
-Bash
+4.  **Configura las credenciales:**
+    Las credenciales de prueba se encuentran en `utils/config.ts` (o variables de entorno). Ajusta la URL y los datos de acceso para tu entorno local.
 
-git clone <URL-DEL-REPOSITORIO>
-cd sdoc-automation-backoffice
-Instala las dependencias:
-Se recomienda usar npm ci para una instalación limpia basada en el archivo package-lock.json.
+## ▶️ Ejecución de las Pruebas (Local)
 
-Bash
-
-npm ci
-Instala los navegadores de Playwright:
-Este comando descarga los navegadores necesarios para las pruebas.
-
-Bash
-
-npx playwright install --with-deps
-Configura las credenciales:
-Las credenciales de prueba se encuentran en el archivo utils/config.ts. Si es necesario, ajusta la URL y los datos de acceso para tu entorno de pruebas.
-
-▶️ Ejecución de las Pruebas
 Puedes ejecutar las pruebas utilizando los siguientes comandos:
 
-Ejecutar todas las pruebas en todos los navegadores configurados:
+* **Ejecutar todas las pruebas (Suite completa):**
+    ```bash
+    npx playwright test
+    ```
 
-Bash
+* **Ejecutar el test de Login aislado (sin usar auth global):**
+    Ideal para depurar problemas de acceso.
+    ```bash
+    npx playwright test tests/login.spec.ts
+    ```
 
-npx playwright test
-Ejecutar las pruebas en un navegador específico:
+* **Ejecutar en un navegador específico:**
+    ```bash
+    npx playwright test --project="firefox"
+    # O para Chrome real:
+    npx playwright test --project="Google Chrome"
+    ```
 
-Bash
+* **Ejecutar en modo UI (Interfaz Gráfica):**
+    ```bash
+    npx playwright test --ui
+    ```
 
-# Ejecutar solo en Firefox
-npx playwright test --project="firefox"
+* **Ver el reporte de resultados:**
+    ```bash
+    npx playwright show-report
+    ```
 
-# Ejecutar solo en Google Chrome
-npx playwright test --project="Google Chrome"
-Ejecutar las pruebas en modo "headed" (con interfaz gráfica):
+## 🤖 Integración Continua y Ejecución en la Nube
 
-Bash
+El flujo de trabajo definido en `.github/workflows/playwright.yml` gestiona la calidad en la nube.
 
-npx playwright test --headed
-Ver el reporte de resultados:
-Una vez finalizada la ejecución, puedes visualizar el reporte HTML con el siguiente comando:
+### Ejecución Automática
+* Se activa en cada `push` o `pull_request` a `main`.
+* Se ejecuta de forma programada (Cron) para monitoreo diario.
 
-Bash
+### 🖐️ Ejecución Manual (GitHub Actions)
+Este proyecto permite disparar ejecuciones manuales para validar navegadores específicos sin necesidad de hacer un commit:
 
-npx playwright show-report
-📂 Estructura del Proyecto
+1.  Ve a la pestaña **Actions** en el repositorio de GitHub.
+2.  Selecciona el workflow **"Run Login Test Only"** (o el workflow general según corresponda).
+3.  Haz clic en el botón **"Run workflow"**.
+4.  Selecciona el navegador deseado en el menú desplegable (ej. `firefox`, `webkit`, `Google Chrome`).
+5.  Haz clic en el botón verde **"Run workflow"**.
+
+---
+
+## 📂 Estructura del Proyecto
+
+```text
 /
-├── .github/workflows/      # Contiene los flujos de trabajo de Integración Continua.
-├── assets/                 # Archivos de prueba (imágenes, documentos, etc.).
-├── pages/                  # Clases del Page Object Model (e.g., LoginPage.ts).
-├── tests/                  # Archivos de especificaciones de las pruebas.
-│   ├── auth.setup.ts       # Configuración de la autenticación global.
-│   └── *.spec.ts           # Pruebas funcionales.
-├── utils/                  # Utilidades y configuración global.
-├── playwright.config.ts    # Archivo principal de configuración de Playwright.
-└── package.json            # Dependencias y scripts del proyecto.
-🤖 Integración Continua
-El flujo de trabajo definido en .github/workflows/playwright.yml se encarga de:
-
-Verificar el código del repositorio.
-
-Instalar Node.js y las dependencias.
-
-Instalar los navegadores de Playwright.
-
-Ejecutar todas las pruebas.
-
-Subir el reporte de resultados como un artefacto en GitHub Actions para su posterior análisis.
+├── .github/workflows/      # Workflows de CI/CD (incluye dispatch manual).
+├── assets/                 # Archivos de prueba (imágenes, documentos).
+├── pages/                  # Page Object Model (e.g., LoginPage.ts).
+├── tests/                  # Specs de pruebas.
+│   ├── auth.setup.ts       # Configuración de autenticación global.
+│   └── login.spec.ts       # Test de login aislado.
+├── utils/                  # Utilidades y configuración.
+├── playwright.config.ts    # Configuración principal.
+└── package.json            # Dependencias.
